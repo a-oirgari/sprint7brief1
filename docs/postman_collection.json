@@ -1,0 +1,330 @@
+{
+  "info": {
+    "name": "Laravel Auth API",
+    "description": "Complete API documentation for the Laravel Authentication & Profile Management API.\n\n## Authentication\nThis API uses **Laravel Sanctum** token-based authentication.\n\nAfter a successful `POST /api/login`, copy the `token` value from the response and set it as a Bearer Token in the **Authorization** tab of every protected request:\n```\nAuthorization: Bearer <your_token_here>\n```\n\n## Base URL\n```\nhttp://localhost:8000\n```",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "Paste your Bearer token here after login"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔓 Authentication (Public)",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"secret123\",\n  \"password_confirmation\": \"secret123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "register"]
+            },
+            "description": "## POST /api/register\nCreate a new user account.\n\n### Body (JSON)\n| Field | Type | Required | Rules |\n|---|---|---|---|\n| name | string | ✅ | max 255 chars |\n| email | string | ✅ | valid email, unique |\n| password | string | ✅ | min 8 chars |\n| password_confirmation | string | ✅ | must match password |\n\n### Responses\n| Status | Message |\n|---|---|\n| 201 | Account created successfully |\n| 422 | Validation failed (errors object included) |"
+          },
+          "response": [
+            {
+              "name": "201 - Account created successfully",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Account created successfully\",\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\"\n  }\n}"
+            },
+            {
+              "name": "422 - Validation failed",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Validation failed\",\n  \"errors\": {\n    \"email\": [\"The email has already been taken.\"]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.token) {",
+                  "  pm.collectionVariables.set('token', json.token);",
+                  "  console.log('Token saved:', json.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"secret123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "login"]
+            },
+            "description": "## POST /api/login\nAuthenticate a user and receive a Bearer token.\n\nThe **Tests** script auto-saves the token to the `{{token}}` collection variable.\n\n### Body (JSON)\n| Field | Type | Required |\n|---|---|---|\n| email | string | ✅ |\n| password | string | ✅ |\n\n### Responses\n| Status | Message |\n|---|---|\n| 200 | Login successful + token |\n| 401 | Invalid credentials |\n| 422 | Validation failed |"
+          },
+          "response": [
+            {
+              "name": "200 - Login successful",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Login successful\",\n  \"token\": \"1|AbCdEfGhIjKlMnOpQrStUvWxYz...\",\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\"\n  }\n}"
+            },
+            {
+              "name": "401 - Invalid credentials",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Invalid credentials\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🔒 Profile (Token required)",
+      "description": "All routes in this folder require a valid Bearer token.\n\nSet it in the **Authorization** tab:\n- Type: `Bearer Token`\n- Token: `{{token}}`\n\nOr manually: `Authorization: Bearer <your_token>`",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "me"]
+            },
+            "description": "## GET /api/me\n🔒 **Protected — Bearer token required**\n\nReturns the authenticated user's profile.\n\n### Headers\n| Header | Value |\n|---|---|\n| Authorization | Bearer {{token}} |\n| Accept | application/json |\n\n### Responses\n| Status | Message |\n|---|---|\n| 200 | Profile fetched successfully |\n| 401 | Unauthorized (missing or invalid token) |"
+          },
+          "response": [
+            {
+              "name": "200 - Profile fetched successfully",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Profile fetched successfully\",\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"created_at\": \"2024-01-01T00:00:00.000000Z\"\n  }\n}"
+            },
+            {
+              "name": "401 - Unauthorized (no token)",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Unauthorized\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+            },
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane@example.com\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "me"]
+            },
+            "description": "## PUT /api/me\n🔒 **Protected — Bearer token required**\n\nUpdate the authenticated user's name and/or email.\n\nBoth fields are optional — send only what you want to change.\n\n### Body (JSON)\n| Field | Type | Required | Rules |\n|---|---|---|---|\n| name | string | ❌ (optional) | max 255 chars |\n| email | string | ❌ (optional) | valid email, unique |\n\n### Responses\n| Status | Message |\n|---|---|\n| 200 | Profile updated successfully |\n| 401 | Unauthorized |\n| 422 | Validation failed |"
+          },
+          "response": [
+            {
+              "name": "200 - Profile updated successfully",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Profile updated successfully\",\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"Jane Doe\",\n    \"email\": \"jane@example.com\"\n  }\n}"
+            },
+            {
+              "name": "401 - Unauthorized",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Unauthorized\"\n}"
+            },
+            {
+              "name": "422 - Validation failed",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Validation failed\",\n  \"errors\": {\n    \"email\": [\"The email has already been taken.\"]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+            },
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"secret123\",\n  \"new_password\": \"newpassword456\",\n  \"new_password_confirmation\": \"newpassword456\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/me/password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "me", "password"]
+            },
+            "description": "## PUT /api/me/password\n🔒 **Protected — Bearer token required**\n\nChange the authenticated user's password.\n\n⚠️ After a successful change, **all tokens are revoked**. You must log in again.\n\n### Body (JSON)\n| Field | Type | Required | Rules |\n|---|---|---|---|\n| current_password | string | ✅ | must match current password |\n| new_password | string | ✅ | min 8 chars |\n| new_password_confirmation | string | ✅ | must match new_password |\n\n### Responses\n| Status | Message |\n|---|---|\n| 200 | Password updated successfully |\n| 401 | Unauthorized |\n| 422 | Current password is incorrect |\n| 422 | Validation failed (new_password too short, etc.) |"
+          },
+          "response": [
+            {
+              "name": "200 - Password updated successfully",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Password updated successfully\"\n}"
+            },
+            {
+              "name": "422 - Current password is incorrect",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Current password is incorrect\"\n}"
+            },
+            {
+              "name": "422 - New password too short",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Validation failed\",\n  \"errors\": {\n    \"new_password\": [\"The new password field must be at least 8 characters.\"]\n  }\n}"
+            },
+            {
+              "name": "401 - Unauthorized",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Unauthorized\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete My Account",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+            },
+            "method": "DELETE",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "me"]
+            },
+            "description": "## DELETE /api/me\n🔒 **Protected — Bearer token required**\n\nPermanently delete the authenticated user's account and revoke all tokens.\n\n⚠️ This action is **irreversible**.\n\n### Responses\n| Status | Message |\n|---|---|\n| 200 | Account deleted successfully |\n| 401 | Unauthorized |"
+          },
+          "response": [
+            {
+              "name": "200 - Account deleted successfully",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Account deleted successfully\"\n}"
+            },
+            {
+              "name": "401 - Unauthorized",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Unauthorized\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "logout"]
+            },
+            "description": "## POST /api/logout\n🔒 **Protected — Bearer token required**\n\nRevoke the current Bearer token. After logout, the token is invalidated and any request using it will return `401 Unauthorized`.\n\n### Responses\n| Status | Message |\n|---|---|\n| 200 | Logout successful |\n| 401 | Unauthorized |"
+          },
+          "response": [
+            {
+              "name": "200 - Logout successful",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Logout successful\"\n}"
+            },
+            {
+              "name": "401 - Unauthorized",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"message\": \"Unauthorized\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
