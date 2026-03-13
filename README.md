@@ -1,59 +1,184 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Laravel Auth API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+API RESTful d'authentification et de gestion de profil, construite avec **Laravel 11** et **Laravel Sanctum**.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Stack technique
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Outil | Rôle |
+|---|---|
+| Laravel 11 | Framework PHP |
+| Laravel Sanctum | Authentification par token |
+| MySQL / SQLite | Base de données |
+| Postman | Test et documentation de l'API |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Installation
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 1. Cloner le projet
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+git clone https://github.com/a-oirgari/sprint7brief1
+cd laravel-auth-api
+```
 
-## Laravel Sponsors
+### 2. Installer les dépendances
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+composer install
+```
 
-### Premium Partners
+### 3. Configurer l'environnement
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-## Contributing
+Éditer `.env` avec vos paramètres de base de données :
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=laravel_auth_api
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-## Code of Conduct
+> **SQLite (développement rapide)** : remplacez simplement par `DB_CONNECTION=sqlite` et créez le fichier `database/database.sqlite`.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### 4. Installer Sanctum
 
-## Security Vulnerabilities
+```bash
+composer require laravel/sanctum
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 5. Exécuter les migrations
 
-## License
+```bash
+php artisan migrate
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### 6. Lancer le serveur
+
+```bash
+php artisan serve
+```
+
+L'API sera disponible sur `http://localhost:8000`.
+
+---
+
+## Documentation API
+
+La documentation complète est fournie sous forme de **collection Postman** :
+
+📄 `docs/postman_collection.json`
+
+### Importer dans Postman
+
+1. Ouvrir Postman
+2. Cliquer sur **Import** (haut gauche)
+3. Sélectionner le fichier `docs/postman_collection.json`
+4. La collection **Laravel Auth API** apparaît dans le panneau de gauche
+
+### Configurer le token automatiquement
+
+La requête **Login** contient un script de test qui enregistre automatiquement le token dans la variable de collection `{{token}}`. Toutes les routes protégées utilisent cette variable.
+
+---
+
+## Routes disponibles
+
+### Publiques
+
+| Méthode | Route | Description |
+|---|---|---|
+| POST | `/api/register` | Créer un compte |
+| POST | `/api/login` | Se connecter (retourne un token) |
+
+### Protégées (Bearer token obligatoire)
+
+| Méthode | Route | Description |
+|---|---|---|
+| POST | `/api/logout` | Se déconnecter |
+| GET | `/api/me` | Consulter son profil |
+| PUT | `/api/me` | Modifier son profil (name, email) |
+| PUT | `/api/me/password` | Changer son mot de passe |
+| DELETE | `/api/me` | Supprimer son compte |
+
+### Passer le token dans Postman
+
+Dans l'onglet **Authorization** de la requête :
+- Type : `Bearer Token`
+- Token : `{{token}}` (ou coller la valeur manuellement)
+
+---
+
+## Codes de réponse HTTP
+
+| Code | Signification |
+|---|---|
+| 200 | Succès |
+| 201 | Ressource créée |
+| 401 | Non authentifié (token absent ou invalide) |
+| 422 | Données invalides (validation échouée) |
+
+---
+
+## Règles métier importantes
+
+- Les mots de passe sont **hachés** avec bcrypt (jamais stockés en clair).
+- Un utilisateur ne peut accéder et modifier **que son propre profil**.
+- Après un **changement de mot de passe**, tous les tokens sont révoqués — il faut se reconnecter.
+- Après une **déconnexion**, le token utilisé est révoqué — il ne fonctionnera plus.
+- Un **email** doit être unique dans la base de données.
+
+---
+
+## Scénario de test complet
+
+Voici le flux à suivre pour valider tous les cas du brief :
+
+```
+1. POST /api/register          → Créer un compte
+2. POST /api/login             → Récupérer le token
+3. GET  /api/me  (sans token)  → Doit retourner 401 Unauthorized
+4. GET  /api/me  (avec token)  → Succès, profil retourné
+5. PUT  /api/me  (avec token)  → Modifier le nom ou l'email
+6. PUT  /api/me/password       → Changer le mot de passe (invalide l'ancien token)
+7. POST /api/logout            → Déconnecter (avec le nouveau token obtenu après re-login)
+8. GET  /api/me  (ancien token)→ Doit retourner 401 Unauthorized
+```
+
+---
+
+## Structure des fichiers
+
+```
+app/
+├── Http/
+│   ├── Controllers/
+│   │   ├── AuthController.php       # register, login, logout
+│   │   └── ProfileController.php    # show, update, updatePassword, destroy
+│   └── Requests/
+│       ├── RegisterRequest.php
+│       ├── LoginRequest.php
+│       ├── UpdateProfileRequest.php
+│       └── UpdatePasswordRequest.php
+├── Models/
+│   └── User.php
+bootstrap/
+└── app.php                          # Gestion de l'erreur 401 en JSON
+routes/
+└── api.php                          # Toutes les routes de l'API
+database/
+└── migrations/
+    ├── ..._create_users_table.php
+    └── ..._create_personal_access_tokens_table.php
+docs/
+└── postman_collection.json          # Documentation Postman
+```
