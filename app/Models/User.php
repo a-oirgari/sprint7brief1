@@ -10,26 +10,28 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory;
 
-    /**
-     * Mass-assignable attributes.
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'provider',      // ← nouveau
+        'provider_id',   // ← nouveau
     ];
 
-    /**
-     * Hidden attributes (never returned in JSON).
-     */
     protected $hidden = [
         'password',
     ];
 
-    /**
-     * Attribute casting.
-     */
     protected $casts = [
         'password' => 'hashed',
     ];
+
+    /**
+     * Returns true if this account was created via OAuth
+     * (no local password set).
+     */
+    public function isOAuth(): bool
+    {
+        return $this->provider !== null;
+    }
 }
